@@ -1,6 +1,7 @@
 (function () {
   let playing = false;
   let isProcessing = false;
+  let currentMode = null;
 
   function extractVideoId(input) {
     if (!input) return null;
@@ -22,7 +23,7 @@
     const iframe = document.getElementById("music-iframe");
     const btn = document.getElementById("music-toggle-btn");
 
-    if (playing && iframe.src.includes(id)) return;
+    currentMode = "video";
 
     iframe.src =
       "https://www.youtube.com/embed/" +
@@ -79,15 +80,24 @@
     if (id) {
       playVideo(id);
     } else {
+      if (currentMode === "video") return;
+
+      currentMode = "search";
+
       const searchQuery = encodeURIComponent(val);
       const searchUrl =
         "https://www.youtube.com/embed?listType=search&list=" + searchQuery;
 
+      const player = document.getElementById("music-player");
+      const iframe = document.getElementById("music-iframe");
+      const btn = document.getElementById("music-toggle-btn");
+
       iframe.src = searchUrl;
-      iframe.height = "200";
       player.classList.remove("hidden");
+      iframe.height = "200";
       btn.textContent = "Stop Stream";
       playing = true;
+      input.value = "";
     }
 
     input.value = "";
