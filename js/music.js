@@ -1,5 +1,6 @@
 (function () {
   let playing = false;
+  let isProcessing = false;
 
   function extractVideoId(input) {
     if (!input) return null;
@@ -15,14 +16,21 @@
   }
 
   function playVideo(id) {
+    if (!id) return;
+
     const player = document.getElementById("music-player");
     const iframe = document.getElementById("music-iframe");
     const btn = document.getElementById("music-toggle-btn");
+
+    if (playing && iframe.src.includes(id)) return;
+
     iframe.src =
       "https://www.youtube.com/embed/" +
       id +
       "?autoplay=1&mute=1&loop=1&playlist=" +
       id;
+
+    iframe.height = "100%";
     player.classList.remove("hidden");
     btn.textContent = "Stop Stream";
     playing = true;
@@ -32,6 +40,7 @@
     const player = document.getElementById("music-player");
     const iframe = document.getElementById("music-iframe");
     const btn = document.getElementById("music-toggle-btn");
+
     iframe.src = "";
     player.classList.add("hidden");
     btn.textContent = "Play Stream";
@@ -43,33 +52,49 @@
       stopVideo();
     } else {
       const select = document.getElementById("music-select");
-      playVideo(select.value);
+      const val = select.value;
+      if (!val) return;
+      playVideo(val);
     }
   };
 
   window.musicPlayUrl = function () {
+    if (isProcessing) return;
+    isProcessing = true;
+
     const input = document.getElementById("music-url-input");
     const val = input.value.trim();
-    if (!val) return;
+
+    if (!val) {
+      isProcessing = false;
+      return;
+    }
 
     const id = extractVideoId(val);
+
+    const player = document.getElementById("music-player");
+    const iframe = document.getElementById("music-iframe");
+    const btn = document.getElementById("music-toggle-btn");
+
     if (id) {
       playVideo(id);
-      input.value = "";
     } else {
       const searchQuery = encodeURIComponent(val);
       const searchUrl =
         "https://www.youtube.com/embed?listType=search&list=" + searchQuery;
-      const player = document.getElementById("music-player");
-      const iframe = document.getElementById("music-iframe");
-      const btn = document.getElementById("music-toggle-btn");
+
       iframe.src = searchUrl;
-      player.classList.remove("hidden");
       iframe.height = "200";
+      player.classList.remove("hidden");
       btn.textContent = "Stop Stream";
       playing = true;
-      input.value = "";
     }
+
+    input.value = "";
+
+    setTimeout(() => {
+      isProcessing = false;
+    }, 400);
   };
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -77,15 +102,18 @@
       if (playing) {
         stopVideo();
         const select = document.getElementById("music-select");
-        playVideo(select.value);
+        const val = select.value;
+        if (!val) return;
+        playVideo(val);
       }
     });
 
     document
       .getElementById("music-url-input")
-      .addEventListener("keydown", (e) => {
+      .addEventListener("keypress", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
+          e.stopPropagation();
           window.musicPlayUrl();
         }
       });
