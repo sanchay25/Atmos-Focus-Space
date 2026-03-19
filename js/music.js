@@ -1,16 +1,26 @@
 (function () {
   let playing = false;
 
-  function extractVideoId(input) {
-    if (!input) return null;
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
-      /^([a-zA-Z0-9_-]{11})$/,
-    ];
-    for (const p of patterns) {
-      const m = input.trim().match(p);
-      if (m) return m[1];
+  function extractVideoId(url) {
+    try {
+      const parsed = new URL(url);
+
+      if (parsed.hostname.includes("youtube.com")) {
+        if (parsed.searchParams.get("v")) {
+          return parsed.searchParams.get("v");
+        }
+
+        const parts = parsed.pathname.split("/");
+        return parts.pop();
+      }
+
+      if (parsed.hostname.includes("youtu.be")) {
+        return parsed.pathname.slice(1);
+      }
+    } catch (e) {
+      if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return url;
     }
+
     return null;
   }
 
@@ -18,11 +28,7 @@
     const player = document.getElementById("music-player");
     const iframe = document.getElementById("music-iframe");
     const btn = document.getElementById("music-toggle-btn");
-    iframe.src =
-      "https://www.youtube.com/embed/" +
-      id +
-      "?autoplay=1&loop=1&playlist=" +
-      id;
+    iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&loop=1&playlist=${id}&controls=0&modestbranding=1`;
     player.classList.remove("hidden");
     btn.textContent = "Stop Stream";
     playing = true;
