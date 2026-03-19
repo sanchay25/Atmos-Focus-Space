@@ -1,90 +1,51 @@
 (function () {
   let playing = false;
 
-  function extractVideoId(input) {
-    if (!input) return null;
-
-    const match = input.match(
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
-    );
-
-    if (match) return match[1];
-
-    if (/^[a-zA-Z0-9_-]{11}$/.test(input.trim())) {
-      return input.trim();
-    }
-
-    return null;
-  }
-
-  function playVideoById(id) {
-    const iframe = document.getElementById("music-iframe");
-    const player = document.getElementById("music-player");
+  function playLocal() {
+    const audio = document.getElementById("local-audio");
     const btn = document.getElementById("music-toggle-btn");
 
-    iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}`;
+    if (!audio) return;
 
-    iframe.height = "100%";
-    player.classList.remove("hidden");
+    audio.play();
     btn.textContent = "Stop Stream";
     playing = true;
   }
 
-  function playSearch(query) {
-    const iframe = document.getElementById("music-iframe");
-    const player = document.getElementById("music-player");
+  function stopLocal() {
+    const audio = document.getElementById("local-audio");
     const btn = document.getElementById("music-toggle-btn");
 
-    iframe.src = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(query)}`;
+    if (!audio) return;
 
-    iframe.height = "200";
-    player.classList.remove("hidden");
-    btn.textContent = "Stop Stream";
-    playing = true;
-  }
-
-  function stopVideo() {
-    const iframe = document.getElementById("music-iframe");
-    const player = document.getElementById("music-player");
-    const btn = document.getElementById("music-toggle-btn");
-
-    iframe.src = "";
-    player.classList.add("hidden");
+    audio.pause();
+    audio.currentTime = 0;
     btn.textContent = "Play Stream";
     playing = false;
   }
 
-  window.musicPlayUrl = function () {
-    const input = document.getElementById("music-url-input");
-    const val = input.value.trim();
-
-    if (!val) return;
-
-    const id = extractVideoId(val);
-
-    if (id) {
-      playVideoById(id);
-    } else {
-      playSearch(val);
-    }
-
-    input.value = "";
-  };
-
   window.musicToggle = function () {
     if (playing) {
-      stopVideo();
+      stopLocal();
+    } else {
+      playLocal();
     }
+  };
+
+  window.musicPlayUrl = function () {
+    playLocal();
   };
 
   document.addEventListener("DOMContentLoaded", () => {
     const input = document.getElementById("music-url-input");
 
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        window.musicPlayUrl();
-      }
-    });
+    if (input) {
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          playLocal();
+        }
+      });
+    }
   });
 })();
