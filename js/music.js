@@ -6,16 +6,18 @@
       const parsed = new URL(url);
 
       if (parsed.hostname.includes("youtube.com")) {
-        if (parsed.searchParams.get("v")) {
-          return parsed.searchParams.get("v");
-        }
+        const v = parsed.searchParams.get("v");
+        if (v && v.length === 11) return v;
 
-        const parts = parsed.pathname.split("/");
-        return parts.pop();
+        const match = parsed.pathname.match(
+          /\/(embed|shorts|v)\/([a-zA-Z0-9_-]{11})/,
+        );
+        if (match) return match[2];
       }
 
       if (parsed.hostname.includes("youtu.be")) {
-        return parsed.pathname.slice(1);
+        const id = parsed.pathname.slice(1);
+        if (id.length === 11) return id;
       }
     } catch (e) {
       if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return url;
@@ -28,7 +30,9 @@
     const player = document.getElementById("music-player");
     const iframe = document.getElementById("music-iframe");
     const btn = document.getElementById("music-toggle-btn");
+
     iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&loop=1&playlist=${id}&controls=0&modestbranding=1`;
+
     player.classList.remove("hidden");
     btn.textContent = "Stop Stream";
     playing = true;
@@ -38,6 +42,7 @@
     const player = document.getElementById("music-player");
     const iframe = document.getElementById("music-iframe");
     const btn = document.getElementById("music-toggle-btn");
+
     iframe.src = "";
     player.classList.add("hidden");
     btn.textContent = "Play Stream";
@@ -49,7 +54,14 @@
       stopVideo();
     } else {
       const select = document.getElementById("music-select");
-      playVideo(select.value);
+      const id = extractVideoId(select.value);
+
+      if (!id) {
+        alert("Invalid preset video");
+        return;
+      }
+
+      playVideo(id);
     }
   };
 
@@ -59,41 +71,58 @@
     if (!val) return;
 
     const id = extractVideoId(val);
-    if (id) {
-      playVideo(id);
-      input.value = "";
-    } else {
-      const searchQuery = encodeURIComponent(val);
-      const searchUrl =
-        "https://www.youtube.com/embed?listType=search&list=" + searchQuery;
-      const player = document.getElementById("music-player");
-      const iframe = document.getElementById("music-iframe");
-      const btn = document.getElementById("music-toggle-btn");
-      iframe.src = searchUrl;
-      player.classList.remove("hidden");
-      iframe.height = "200";
-      btn.textContent = "Stop Stream";
-      playing = true;
-      input.value = "";
+
+    if (!id) {
+      alert("Invalid YouTube link");
+      return;
     }
+
+    playVideo(id);
+    input.value = "";
+  };
+
+  window.musicSearch = function () {
+    const input = document.getElementById("music-url-input");
+    const val = input.value.trim();
+    if (!val) return;
+
+    const player = document.getElementById("music-player");
+    const iframe = document.getElementById("music-iframe");
+    const btn = document.getElementById("music-toggle-btn");
+
+    const searchQuery = encodeURIComponent(val);
+
+    iframe.src = `https://www.youtube.com/embed?listType=search&list=${searchQuery}`;
+
+    player.classList.remove("hidden");
+    iframe.height = "200";
+    btn.textContent = "Stop Stream";
+    playing = true;
+
+    input.value = "";
   };
 
   document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("music-select").addEventListener("change", () => {
-      if (playing) {
-        stopVideo();
-        const select = document.getElementById("music-select");
-        playVideo(select.value);
-      }
-    });
+    const select = document.getElementById("music-select");
+    const input = document.getElementById("music-url-input");
 
-    document
-      .getElementById("music-url-input")
-      .addEventListener("keydown", (e) => {
+    if (select) {
+      select.addEventListener("change", () => {
+        if (playing) {
+          stopVideo();
+          const id = extractVideoId(select.value);
+          if (id) playVideo(id);
+        }
+      });
+    }
+
+    if (input) {
+      input.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
           window.musicPlayUrl();
         }
       });
+    }
   });
 })();
