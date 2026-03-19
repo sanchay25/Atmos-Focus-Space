@@ -86,9 +86,7 @@ Increase **focus session completion rate** and reduce distractions.
 ---
 
 ## 🌍 Live Demo
-
-https://sanchay25.github.io/Atmos-Focus-Space/
-
+https://atmoslive.vercel.app
 ---
 
 ## 🤝 Contributing
