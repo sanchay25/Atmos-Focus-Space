@@ -19,6 +19,9 @@ Atmos helps users stay focused using a distraction-free interface, ambient sound
 > Mobile and tablet responsiveness is part of the upcoming roadmap.
 
 ---
+## 📸 Screenshots
+<img src="assets/images/screenshot.png" width="800"/>
+---
 
 ## 🚀 Problem
 
