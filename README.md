@@ -21,6 +21,7 @@ Atmos helps users stay focused using a distraction-free interface, ambient sound
 ---
 ## 📸 Screenshots
 <img src="assets/images/screenshot.png" width="800"/>
+
 ---
 
 ## 🚀 Problem
